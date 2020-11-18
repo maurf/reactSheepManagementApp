@@ -6,14 +6,18 @@ import { Provider } from 'react-redux';
 import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
 import thunk from 'redux-thunk';
 
-import './index.css';
 import App from './App';
 import sheepManagerReducer from './store/reducers/sheepManagerReducer'
+import editSheepReducer from './store/reducers/editSheepReducer'
+
+import './styles/index.scss';
+
 const composeEnhancers = process.env.NODE_ENV === 'development' ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ : null || compose;
 
 
 const rootReducer = combineReducers({
-  sheepManager: sheepManagerReducer
+  sheepManager: sheepManagerReducer,
+  editSheepReducer: editSheepReducer
 });
 
 const store = createStore(rootReducer, composeEnhancers(
