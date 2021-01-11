@@ -14,7 +14,10 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
     "redux": "^4.0.5",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "@tailwindcss/custom-forms": "^0.2.1",
+    "tailwindcss": "^1.9.2"
+
   },
   "scripts": {
     "start": "npm run build:css && react-scripts start",
@@ -39,9 +42,6 @@
     ]
   },
   "devDependencies": {
-    "@tailwindcss/custom-forms": "^0.2.1",
     "autoprefixer": "^10.0.1",
-    "postcss-cli": "^8.1.0",
-    "tailwindcss": "^1.9.2"
-  }
+    "postcss-cli": "^8.1.0"  }
 }
