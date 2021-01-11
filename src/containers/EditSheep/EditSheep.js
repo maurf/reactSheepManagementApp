@@ -12,7 +12,7 @@ const NewSheep = props => {
     const dispatch = useDispatch();
     const sheepSaved = useSelector( state => state.editSheepReducer.editSheepSaved );
     const fetchedSheep = useSelector( state => state.editSheepReducer.sheep );
-
+    const sheepsList = useSelector( state => state.sheepManager.sheeps );
     const initialState = { 
         id: props.match.params.id,
         born: "",
@@ -21,10 +21,10 @@ const NewSheep = props => {
         tagColor: "",
         breed: "dorper",
         color: "",
-        type: "carnico",
+        type: "reproductor",
         status: "destete",
         description: "",
-        source: "nacido_finca",
+        source: "compra",
         boughtPrice: "",
         soldDate: "",
         soldPrice: "",
@@ -33,15 +33,12 @@ const NewSheep = props => {
     }
 
     const [sheepData, setSheepData] = useState(initialState);
-
     const initSheep = useCallback(() => dispatch(actions.initSheep(props.match.params.id)), [props.match.params.id]);
 
-    useEffect(() => { initSheep() }, []);
+    useEffect(() => { initSheep() }, [initSheep]);
 
     useEffect(() => {
-        console.log("fetchedSheep", fetchedSheep);
         setSheepData(fetchedSheep ? fetchedSheep: initialState)
-        console.log("sheepData", sheepData);
     }, [fetchedSheep]) 
 
     const inputChangedHandler = (event, inputIdentifier) => {
@@ -49,7 +46,6 @@ const NewSheep = props => {
             ...sheepData,
             [inputIdentifier]: event.target.value
         }
-        console.log("newSheepData ", newSheepData)
         setSheepData(newSheepData);
     }
 
@@ -64,6 +60,10 @@ const NewSheep = props => {
             weaningDate: "",
             lambs: []
         }
+
+        if (!sheepData.reproductiveCycles) {
+            sheepData.reproductiveCycles = [];
+        }
         const newSheepData = {
             ...sheepData,
             reproductiveCycles:  sheepData.reproductiveCycles.concat( newCycle )
@@ -71,61 +71,90 @@ const NewSheep = props => {
         setSheepData(newSheepData);
     }
 
-    const onEditReproductiveCycle = (event, inputIdentifier, cycleId) => {
-
+    const onAddLamb = (cycleId, lamb) => {
         const newReproductiveCycles = [ ...sheepData.reproductiveCycles ];
-        console.log(newReproductiveCycles);
-
+        if (!newReproductiveCycles[cycleId].lambs) {
+            newReproductiveCycles[cycleId].lambs = [];
+        }
         const newCycle = {
             ...newReproductiveCycles[cycleId],
-            [inputIdentifier]: event.target.value
+            lambs : newReproductiveCycles[cycleId].lambs.concat(lamb)
         };
         
         newReproductiveCycles[cycleId] = newCycle;
-        console.log(newReproductiveCycles);
         const newSheepData = {
             ...sheepData,
             reproductiveCycles: [...newReproductiveCycles]
             
         }
-        console.log(newSheepData);
         setSheepData(newSheepData);
     }
 
+    const onEditReproductiveCycle = (event, inputIdentifier, cycleId) => {
+        const newReproductiveCycles = [ ...sheepData.reproductiveCycles ];
+        const newCycle = {
+            ...newReproductiveCycles[cycleId],
+            [inputIdentifier]: event.target.value
+        };
+        newReproductiveCycles[cycleId] = newCycle;
+
+        const newSheepData = {
+            ...sheepData,
+            reproductiveCycles: [...newReproductiveCycles]
+            
+        }
+        setSheepData(newSheepData);
+    }
+
+    
     const redirectHome = () => props.history.replace("/");
 
     const divStyle = {
         backgroundImage: 'url(https://images.unsplash.com/photo-1588672204561-5638420df69c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1060&q=80)',
     };
 
-    const reproductiveCycles = sheepData.reproductiveCycles.length > 0 ?
-                                sheepData.reproductiveCycles.map((reproductiveCycle, index) => (
-                                    <ReproductionSteps
-                                        key={index}
-                                        id={index}
-                                        onChange= {onEditReproductiveCycle}
-                                        breedingDate = {reproductiveCycle.breedingDate}
-                                        dueDate = {reproductiveCycle.dueDate}
-                                        weaningDate = {reproductiveCycle.weaningDate}
-                                        lambs = {null}
-                                    />
-                                )) : 
-                                <div class="flex w-full flex-wrap mt-5 justify-center">
-                                    <p class="block tracking-wide text-gray-700 text-base mb-5 ">No Hay Ciclos Reproductivos</p>
-                                    <hr class="mx-3 border-t-1 border-prymary w-full"></hr>
-                                </div> ;
+    let reproductiveCycles = <div className="flex w-full flex-wrap mt-5 justify-center">
+                                <p className="block tracking-wide text-gray-700 text-base mb-5 ">No Hay Ciclos Reproductivos</p>
+                                <hr className="mx-3 border-t-1 border-prymary w-full"></hr>
+                            </div>
+    if (sheepData.reproductiveCycles) {
+        reproductiveCycles = 
+            sheepData.reproductiveCycles.map((reproductiveCycle, index) => 
+                <ReproductionSteps
+                    key={index}
+                    id={index}
+                    onChange= {onEditReproductiveCycle}
+                    breedingDate = {reproductiveCycle.breedingDate}
+                    dueDate = {reproductiveCycle.dueDate}
+                    weaningDate = {reproductiveCycle.weaningDate}
+                    lambs = {reproductiveCycle.lambs}
+                    onAddLamb = {onAddLamb}
+                    history = {props.history}
+                />
+            )
+    }
+    let modal = null;
+    if (sheepSaved) {
+        modal = <Modal 
+                    type="success" 
+                    title="Éxito" 
+                    description="La oveja fue agregada con éxito" 
+                    btnText="Ver Todas" clicked={redirectHome} 
+                    cancelClicked={redirectHome} btnColor="green"/> 
 
-    const redirect = sheepSaved ? 
-        <Modal type="success" title="Éxito" description="La oveja fue agregada con éxito" btnText="Ver Todas" clicked={redirectHome} cancelClicked={redirectHome} btnColor="green"/> 
-        : null;
+    }       
+    
+    if (sheepsList.length < 1) {
+        props.history.replace("/")
+    }
 
     return (
         <div className="container mx-auto max-w-5xl px-6 py-8 relative">
-            { redirect }
+            { modal }
             <h3 className="text-gray-700 text-3xl font-medium mb-4">Editar Oveja</h3>
             <div className="rounded bg-white pb-5">
-                <div class="flex w-full flex-wrap mb-6 justify-center bg-primary">
-                    <h3 class="block tracking-wide text-white text-xl font-bold mb-3 mt-3  ml-1 ">Datos Generales</h3>
+                <div className="flex w-full flex-wrap mb-6 justify-center bg-primary">
+                    <h3 className="block tracking-wide text-white text-xl font-bold mb-3 mt-3  ml-1 ">Datos Generales</h3>
                 </div>
                 <div className="flex w-full flex-wrap mb-6">
                     <div className="w-full md:w-1/3 px-3 mb-6 md:mb-0 flex justify-center">
@@ -262,7 +291,9 @@ const NewSheep = props => {
                             elementType="select"
                             elementConfig= {{ 
                                 options: [
+                                    { value: 'fecundada', displayValue: 'Posible fecundacion' },
                                     { value: 'prenada', displayValue: 'Preñada' },
+                                    { value: 'seca', displayValue: 'Seca' },
                                     { value: 'lactancia', displayValue: 'Lactancia' },
                                     { value: 'destete', displayValue: 'Destete' },
                                     { value: 'desarrollo', displayValue: 'Desarrollo' },
@@ -329,8 +360,8 @@ const NewSheep = props => {
                     </div>
                 </div>
 
-                <div class="flex w-full flex-wrap mt-8 justify-center bg-primary">
-                    <h3 class="block tracking-wide text-white text-xl font-bold mt-3 mb-3 ml-1 ">Ciclos Reproductivos</h3>
+                <div className="flex w-full flex-wrap mt-8 justify-center bg-primary">
+                    <h3 className="block tracking-wide text-white text-xl font-bold mt-3 mb-3 ml-1 ">Ciclos Reproductivos</h3>
                 </div>
                 {reproductiveCycles}
                 <div className="text-right px-3 -mt-6">

@@ -1,9 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import Aux from '../../hoc/Aux/Aux';
 import Chips from '../UI/Chips/Chips';
-
+import SheepSelector from '../SheepSelector/SheepSelector';
 const ReproductionSteps = props => {
+    const [showSheepSelector, setShowSheepSelector] = useState(false);
+    const fetchedSheeps = useSelector( state => state.sheepManager.sheeps );
+
+    const onChangeShowSheepSelector = () => setShowSheepSelector(!showSheepSelector);
     
+    let sheepSelector = null;
+    if (showSheepSelector) {
+        sheepSelector = <SheepSelector 
+                            cycleId = {props.id}
+                            onSelect = {props.onAddLamb} 
+                            onClose=  {onChangeShowSheepSelector}/>
+    }
+    let lambs = null;
+    if (props.lambs) {
+        lambs = props.lambs.map( lamb => {
+            const sheep = fetchedSheeps.filter( sheep => sheep.id === lamb );
+            return <Chips 
+                    key = {sheep[0].id}
+                    onDelete = { () => {} } 
+                    onClick = { () => props.history.push(`/sheep/${sheep[0].id}`) }>
+                        #{sheep[0].earTag} {sheep[0].tagColor}
+                    </Chips>
+        })
+    }
     return (
         <Aux>
             <div className="w-full py-6">
@@ -38,12 +62,12 @@ const ReproductionSteps = props => {
                                 </div>
                             </div>
 
-                            <div className="w-10 h-10 mx-auto bg-green-300 rounded-full text-lg text-white flex items-center">
-                            <span className="text-center text-white w-full">
-                                <svg className="w-full fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-                                <path className="heroicon-ui" d="M19 10h2a1 1 0 0 1 0 2h-2v2a1 1 0 0 1-2 0v-2h-2a1 1 0 0 1 0-2h2V8a1 1 0 0 1 2 0v2zM9 12A5 5 0 1 1 9 2a5 5 0 0 1 0 10zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm8 11a1 1 0 0 1-2 0v-2a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v2a1 1 0 0 1-2 0v-2a5 5 0 0 1 5-5h5a5 5 0 0 1 5 5v2z"/>
-                                </svg>
-                            </span>
+                            <div className="w-10 h-10 mx-auto bg-green-300 rounded-full text-lg text-white flex items-center cursor-pointer" onClick={onChangeShowSheepSelector}>
+                                <span className="text-center text-white w-full">
+                                    <svg className="w-full fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                                    <path className="heroicon-ui" d="M19 10h2a1 1 0 0 1 0 2h-2v2a1 1 0 0 1-2 0v-2h-2a1 1 0 0 1 0-2h2V8a1 1 0 0 1 2 0v2zM9 12A5 5 0 1 1 9 2a5 5 0 0 1 0 10zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm8 11a1 1 0 0 1-2 0v-2a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v2a1 1 0 0 1-2 0v-2a5 5 0 0 1 5-5h5a5 5 0 0 1 5 5v2z"/>
+                                    </svg>
+                                </span>
                             </div>
                         </div>
 
@@ -52,9 +76,7 @@ const ReproductionSteps = props => {
                             <input className="form-input text-center" type="text" placeholder="Fecha Parto" onChange={ event => props.onChange(event, "dueDate", props.id) } value={props.dueDate}/>
                             <div className="flex flex-col flex-wrap justify-center items-center text-xs text-center text-sm text-gray-700">
                                 Hijos:
-                                <Chips onDelete={() => {}}>Arete #234 Azul</Chips>
-                                <Chips onDelete={() => {}}>Arete #234 Amarillos</Chips>
-
+                                {lambs}
                             </div>
                         </div>
                     </div>
@@ -86,8 +108,9 @@ const ReproductionSteps = props => {
                 </div>
             </div>
             <div className="flex w-full flex-wrap mt-2 justify-center">
-                <hr class="mx-3 border-t-1 border-prymary w-full" />       
+                <hr className="mx-3 border-t-1 border-prymary w-full" />       
             </div> 
+            {sheepSelector}
         </Aux>
 
     )

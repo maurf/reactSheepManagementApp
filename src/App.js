@@ -18,7 +18,7 @@ const app = props => {
   let routes = (
     <Switch>
       <Route path="/new" component={NewSheep}></Route>
-      <Route path="/sheep/:id" exact component={EditSheep}></Route>
+      <Route path="/sheep/:id" component={EditSheep}></Route>
       <Route path="/" exact component={Sheeps}></Route>
       <Redirect to="/" />
     </Switch>
